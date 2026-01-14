@@ -1,0 +1,222 @@
+.reflect-page {
+    min-height: 100vh;
+    background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-secondary) 100%);
+    padding: var(--spacing-xl) 0;
+}
+
+/* Header */
+.reflect-header {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.back-button {
+    position: absolute;
+    left: var(--spacing-lg);
+    top: var(--spacing-xl);
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.back-button:hover {
+    color: var(--color-primary);
+}
+
+.reflect-header h1 {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--spacing-sm);
+}
+
+.reflect-header p {
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+/* Content */
+.reflect-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+.prompt-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    border: 1px solid var(--color-border);
+}
+
+.prompt-card h3 {
+    font-size: var(--font-size-base);
+    margin: 0 0 var(--spacing-md) 0;
+    color: var(--color-text);
+}
+
+.prompt-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.prompt-card li {
+    padding: var(--spacing-sm) 0;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.prompt-card li:last-child {
+    border-bottom: none;
+}
+
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-md);
+    color: #991b1b;
+}
+
+.error-message button {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* Analyzing State */
+.analyzing-container {
+    text-align: center;
+    max-width: 400px;
+}
+
+.analyzing-container h2 {
+    font-size: var(--font-size-xl);
+    margin: var(--spacing-lg) 0 var(--spacing-sm);
+}
+
+.analyzing-container>p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-xl);
+}
+
+.analyzing-steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.analyzing-steps .step {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    opacity: 0.5;
+}
+
+.analyzing-steps .step.active {
+    color: var(--color-primary);
+    opacity: 1;
+    font-weight: var(--font-weight-medium);
+}
+
+/* Result State */
+.result-container {
+    text-align: center;
+    max-width: 450px;
+    padding: var(--spacing-xl);
+}
+
+.punchline-display {
+    margin-bottom: var(--spacing-xl);
+}
+
+.punchline-emoji {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: var(--spacing-md);
+}
+
+.punchline-display h2 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    margin: 0;
+}
+
+.result-emotions {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.emotion-badge {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    text-transform: capitalize;
+}
+
+.emotion-badge.primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+.emotion-badge.secondary {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text);
+}
+
+.result-reassurance {
+    margin-bottom: var(--spacing-lg);
+}
+
+.result-reassurance p {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    margin: 0;
+}
+
+.result-insight {
+    background: var(--color-bg-secondary);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-relaxed);
+    margin-bottom: var(--spacing-xl);
+    text-align: left;
+}
+
+.result-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.result-actions .btn {
+    width: 100%;
+}
+
+@media (max-width: 480px) {
+    .back-button {
+        position: static;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .punchline-emoji {
+        font-size: 3rem;
+    }
+
+    .punchline-display h2 {
+        font-size: var(--font-size-xl);
+    }
+}

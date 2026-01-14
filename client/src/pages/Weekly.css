@@ -1,0 +1,264 @@
+.weekly-page {
+    min-height: 100vh;
+    background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-secondary) 100%);
+    padding: var(--spacing-xl) 0;
+}
+
+/* Header */
+.weekly-header {
+    margin-bottom: var(--spacing-2xl);
+    position: relative;
+}
+
+.weekly-header .back-button {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.weekly-header .back-button:hover {
+    color: var(--color-primary);
+}
+
+.weekly-header .header-content {
+    text-align: center;
+    padding-top: var(--spacing-lg);
+}
+
+.weekly-header .header-badge {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--color-secondary-light);
+    color: #7c3aed;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.weekly-header h1 {
+    font-size: var(--font-size-2xl);
+    margin: 0 0 var(--spacing-xs) 0;
+}
+
+.weekly-header p {
+    color: var(--color-text-secondary);
+    margin: 0;
+    font-size: var(--font-size-sm);
+}
+
+/* Content */
+.weekly-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+.section-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--spacing-md) 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Chart Section */
+.chart-section {
+    /* EmotionTrendChart handles its own styling */
+}
+
+/* Patterns Section */
+.patterns-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+.pattern-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    border: 1px solid var(--color-border);
+}
+
+.pattern-card h3 {
+    font-size: var(--font-size-base);
+    margin: 0 0 var(--spacing-md) 0;
+}
+
+.pattern-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.pattern-tag {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    text-transform: capitalize;
+}
+
+.emotion-tag {
+    background: var(--color-primary-light);
+    color: var(--color-primary-dark);
+}
+
+.theme-tag {
+    background: var(--color-secondary-light);
+    color: #7c3aed;
+}
+
+/* Pattern Description */
+.pattern-description {
+    /* Styling for pattern description */
+}
+
+.description-card {
+    display: flex;
+    gap: var(--spacing-lg);
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    border: 1px solid var(--color-border);
+}
+
+.description-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.description-card h3 {
+    font-size: var(--font-size-base);
+    margin: 0 0 var(--spacing-sm) 0;
+}
+
+.description-card p {
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: var(--line-height-relaxed);
+}
+
+/* Reflections List */
+.reflections-list {
+    /* Section styling */
+}
+
+.reflections-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.reflection-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+
+.reflection-item:hover {
+    background: var(--color-bg-secondary);
+    transform: translateX(4px);
+}
+
+.reflection-date {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    min-width: 100px;
+}
+
+.reflection-emotion {
+    flex: 1;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    text-transform: capitalize;
+}
+
+.reflection-arrow {
+    color: var(--color-text-muted);
+}
+
+/* Empty & Error States */
+.empty-state,
+.error-state {
+    text-align: center;
+    max-width: 400px;
+    padding: var(--spacing-xl);
+}
+
+.empty-icon,
+.error-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: var(--spacing-lg);
+}
+
+.empty-state h2,
+.error-state h2 {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-sm);
+}
+
+.empty-state p,
+.error-state p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-xl);
+}
+
+.progress-indicator {
+    width: 100%;
+    height: 8px;
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-full);
+    margin-bottom: var(--spacing-sm);
+    overflow: hidden;
+}
+
+.progress-indicator .progress-fill {
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: var(--radius-full);
+    transition: width var(--transition-normal);
+}
+
+.progress-text {
+    display: block;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-xl);
+}
+
+@media (max-width: 480px) {
+    .patterns-section {
+        grid-template-columns: 1fr;
+    }
+
+    .weekly-header .back-button {
+        position: static;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .weekly-header .header-content {
+        padding-top: 0;
+    }
+
+    .description-card {
+        flex-direction: column;
+    }
+}

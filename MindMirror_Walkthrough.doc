@@ -1,0 +1,118 @@
+# MindMirror - Project Walkthrough
+
+A mental health reflection web application that helps users notice emotional patterns using AI-powered analysis.
+
+---
+
+## Project Structure
+
+mindmirror/
+├── client/                     # React frontend (Vite)
+│   ├── src/
+│   │   ├── components/         # Reusable UI components
+│   │   │   ├── AudioRecorder   # Browser audio recording
+│   │   │   ├── EmotionCard     # Emotion display
+│   │   │   ├── EmotionTrendChart # Weekly visualization
+│   │   │   ├── InsightCard     # Insight display
+│   │   │   ├── LoadingSpinner  # Loading states
+│   │   │   └── Disclaimer      # Ethics notice
+│   │   ├── contexts/
+│   │   │   └── AuthContext.jsx # Firebase auth
+│   │   ├── pages/              # Route pages
+│   │   │   ├── Login.jsx       # /login
+│   │   │   ├── Register.jsx    # /register
+│   │   │   ├── Home.jsx        # /home
+│   │   │   ├── Reflect.jsx     # /reflect
+│   │   │   ├── Daily.jsx       # /daily/:date
+│   │   │   ├── Weekly.jsx      # /weekly
+│   │   │   └── Profile.jsx     # /profile
+│   │   ├── firebase.js         # Firebase config
+│   │   └── App.jsx             # Main app + routing
+│   └── package.json
+│
+└── server/                     # Express backend
+    ├── routes/
+    │   └── analysis.js         # API endpoints
+    ├── firebase-admin.js       # Firebase Admin SDK
+    ├── gemini.js               # Gemini AI integration
+    ├── server.js               # Express server
+    └── package.json
+
+---
+
+## Setup Instructions
+
+### 1. Firebase Configuration
+
+1. Create a project at console.firebase.google.com
+2. Enable Authentication (Email/Password + Google)
+3. Create Firestore database
+4. Enable Storage
+5. Download service account JSON for backend
+
+### 2. Environment Variables
+
+Client (client/.env):
+
+VITE_FIREBASE_API_KEY=your-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+VITE_FIREBASE_APP_ID=your-app-id
+VITE_API_URL=http://localhost:5000/api
+
+Server (server/.env):
+
+FIREBASE_SERVICE_ACCOUNT_PATH=./serviceAccountKey.json
+FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+GEMINI_API_KEY=your-gemini-api-key
+PORT=5000
+FRONTEND_URL=http://localhost:5173
+
+### 3. Running the Application
+
+Start Backend:
+cd server
+npm install
+npm run dev
+# Server runs on http://localhost:5000
+
+Start Frontend:
+cd client
+npm install
+npm run dev
+# App runs on http://localhost:5173
+
+---
+
+## Features Implemented
+
+| Feature              | Description                              |
+|---------------------|------------------------------------------|
+| 🔐 Authentication    | Email/password + Google sign-in          |
+| 🎙️ Audio Recording   | 30-60 second browser recording           |
+| 🧠 AI Analysis       | Gemini transcription + emotional analysis|
+| 📊 Weekly Patterns   | 7-day emotion trend visualization        |
+| 🎨 Calm UI           | Soft color palette, minimal design       |
+| 🔒 Ethics            | Disclaimers, no medical advice           |
+
+---
+
+## API Endpoints
+
+| Endpoint                       | Method | Description                      |
+|--------------------------------|--------|----------------------------------|
+| /api/upload-audio              | POST   | Upload audio to Firebase Storage |
+| /api/analyze-daily             | POST   | Transcribe + analyze reflection  |
+| /api/analyze-weekly            | POST   | Analyze 7-day patterns           |
+| /api/reflections/:userId       | GET    | Get user reflections             |
+| /api/reflection/:userId/:date  | GET    | Get specific reflection          |
+
+---
+
+## Build Results
+
+- Frontend: 86 modules, 472KB JS, 39KB CSS
+- Backend: 6 dependencies installed
+- Status: ✅ Production-ready
