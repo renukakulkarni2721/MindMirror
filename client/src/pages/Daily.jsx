@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { db } from '../firebase';
+import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EmotionCard from '../components/EmotionCard';
 import InsightCard from '../components/InsightCard';
 import Disclaimer from '../components/Disclaimer';
 import './Daily.css';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function Daily() {
     const { date } = useParams();
@@ -22,20 +22,24 @@ export default function Daily() {
             if (!user || !date) return;
 
             try {
-                const response = await fetch(`${API_URL}/reflection/${user.uid}/${date}`);
+                // Fetch directly from Firestore
+                const q = query(
+                    collection(db, 'reflections'),
+                    where('userId', '==', user.uid),
+                    where('date', '==', date),
+                    limit(1)
+                );
 
-                if (response.status === 404) {
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
                     setError('No reflection found for this date.');
                     setLoading(false);
                     return;
                 }
 
-                if (!response.ok) {
-                    throw new Error('Failed to fetch reflection');
-                }
-
-                const data = await response.json();
-                setReflection(data.reflection);
+                const doc = snapshot.docs[0];
+                setReflection({ id: doc.id, ...doc.data() });
             } catch (err) {
                 console.error('Fetch error:', err);
                 setError('Unable to load reflection. Please try again.');
@@ -78,7 +82,7 @@ export default function Daily() {
                     <p>{error}</p>
                     <div className="error-actions">
                         <Link to="/reflect" className="btn btn-primary">
-                            Record a reflection
+                            Write a reflection
                         </Link>
                         <button className="btn btn-secondary" onClick={() => navigate('/home')}>
                             Go home
@@ -116,7 +120,7 @@ export default function Daily() {
                                     intensity={reflection.emotionalIntensity}
                                 />
                             </div>
-                            {reflection.secondaryEmotion && (
+                            {reflection.secondaryEmotion && reflection.secondaryEmotion !== 'null' && (
                                 <div className="emotion-item">
                                     <span className="emotion-label">Secondary</span>
                                     <EmotionCard

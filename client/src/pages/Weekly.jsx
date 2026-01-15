@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { db } from '../firebase';
+import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EmotionTrendChart from '../components/EmotionTrendChart';
 import InsightCard from '../components/InsightCard';
@@ -13,6 +15,7 @@ export default function Weekly() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [weeklyData, setWeeklyData] = useState(null);
+    const [reflections, setReflections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -21,6 +24,21 @@ export default function Weekly() {
             if (!user) return;
 
             try {
+                // Fetch reflections from Firestore for chart display
+                const reflectionsQuery = query(
+                    collection(db, 'reflections'),
+                    where('userId', '==', user.uid),
+                    orderBy('createdAt', 'desc'),
+                    limit(7)
+                );
+                const reflectionsSnapshot = await getDocs(reflectionsQuery);
+                const reflectionsData = reflectionsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setReflections(reflectionsData);
+
+                // Fetch weekly analysis via API
                 const response = await fetch(`${API_URL}/analyze-weekly`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -73,7 +91,7 @@ export default function Weekly() {
                 <div className="empty-state fade-in">
                     <span className="empty-icon">📊</span>
                     <h2>Building Your Patterns</h2>
-                    <p>{weeklyData?.message}</p>
+                    <p>{weeklyData?.message || 'Need at least 3 reflections for analysis'}</p>
                     <div className="progress-indicator">
                         <div
                             className="progress-fill"
@@ -84,14 +102,15 @@ export default function Weekly() {
                         {weeklyData?.reflectionCount || 0} of 3 reflections needed
                     </span>
                     <Link to="/reflect" className="btn btn-primary">
-                        Record a reflection
+                        Write a reflection
                     </Link>
                 </div>
             </div>
         );
     }
 
-    const { data, reflections } = weeklyData;
+    // Use analysis instead of data (matches new API format)
+    const analysis = weeklyData.analysis;
 
     return (
         <div className="weekly-page">
@@ -119,7 +138,7 @@ export default function Weekly() {
                         <div className="pattern-card">
                             <h3>💭 Dominant Emotions</h3>
                             <div className="pattern-tags">
-                                {data.dominantEmotions?.map((emotion, index) => (
+                                {analysis?.dominantEmotions?.map((emotion, index) => (
                                     <span key={index} className="pattern-tag emotion-tag">
                                         {emotion}
                                     </span>
@@ -129,7 +148,7 @@ export default function Weekly() {
                         <div className="pattern-card">
                             <h3>🎯 Key Themes</h3>
                             <div className="pattern-tags">
-                                {data.dominantThemes?.map((theme, index) => (
+                                {analysis?.dominantThemes?.map((theme, index) => (
                                     <span key={index} className="pattern-tag theme-tag">
                                         {theme}
                                     </span>
@@ -139,13 +158,13 @@ export default function Weekly() {
                     </section>
 
                     {/* Emotional Pattern Description */}
-                    {data.emotionalPattern && (
+                    {analysis?.emotionalPattern && (
                         <section className="pattern-description slide-up">
                             <div className="description-card">
                                 <span className="description-icon">🌊</span>
                                 <div>
                                     <h3>Emotional Flow</h3>
-                                    <p>{data.emotionalPattern}</p>
+                                    <p>{analysis.emotionalPattern}</p>
                                 </div>
                             </div>
                         </section>
@@ -155,8 +174,8 @@ export default function Weekly() {
                     <section className="insight-section slide-up">
                         <InsightCard
                             title="Weekly Insight"
-                            content={data.weeklyInsight}
-                            question={data.reflectiveQuestion}
+                            content={analysis?.weeklyInsight}
+                            question={analysis?.reflectiveQuestion}
                             icon="🔮"
                         />
                     </section>

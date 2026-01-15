@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import AudioRecorder from '../components/AudioRecorder';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Disclaimer from '../components/Disclaimer';
 import './Reflect.css';
@@ -24,50 +23,52 @@ const punchlines = {
     overwhelm: "One breath at a time. 🌬️",
     stress: "You're handling more than you know. ⭐",
     love: "Love is what connects us. 💕",
+    confusion: "It's okay to not have all the answers. 🌙",
+    fear: "Courage is feeling the fear anyway. 🦋",
     default: "Thank you for sharing. 💭"
 };
 
 export default function Reflect() {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const isQuickMode = searchParams.get('mode') === 'quick';
 
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisResult, setAnalysisResult] = useState(null);
     const [error, setError] = useState(null);
     const [showPunchline, setShowPunchline] = useState(false);
+    const [textInput, setTextInput] = useState('');
 
-    const handleRecordingComplete = async (audioBlob, duration) => {
+    const handleTextSubmit = async () => {
+        if (!textInput.trim() || textInput.trim().length < 20) {
+            setError('Please write at least 20 characters to express your thoughts.');
+            return;
+        }
+
         setIsAnalyzing(true);
         setError(null);
 
         try {
-            const formData = new FormData();
-            formData.append('audio', audioBlob, 'reflection.webm');
-            formData.append('userId', user.uid);
-            formData.append('date', new Date().toISOString().split('T')[0]);
-
             const response = await fetch(`${API_URL}/analyze-daily`, {
                 method: 'POST',
-                body: formData
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user.uid,
+                    date: new Date().toISOString().split('T')[0],
+                    textInput: textInput.trim()
+                })
             });
 
             const result = await response.json();
 
             if (!response.ok || !result.success) {
-                // Check for rate limit or specific error messages
-                const errorMsg = result.error || result.details || 'Analysis failed';
-                if (errorMsg.includes('busy') || errorMsg.includes('rate') || errorMsg.includes('429')) {
-                    throw new Error('The AI service is busy. Please wait 30 seconds and try again.');
-                }
+                const errorMsg = result.error || 'Analysis failed';
                 throw new Error(errorMsg);
             }
 
-            setAnalysisResult(result.data);
-
-            // Show punchline first, then details
+            // Use result.analysis (matches new API format)
+            setAnalysisResult(result.analysis);
             setShowPunchline(true);
+            setTextInput('');
 
         } catch (err) {
             console.error('Analysis error:', err);
@@ -91,6 +92,7 @@ export default function Reflect() {
         setAnalysisResult(null);
         setShowPunchline(false);
         setError(null);
+        setTextInput('');
     };
 
     if (isAnalyzing) {
@@ -98,12 +100,12 @@ export default function Reflect() {
             <div className="reflect-page page-center">
                 <div className="analyzing-container fade-in">
                     <LoadingSpinner size="large" />
-                    <h2>Listening to your reflection...</h2>
+                    <h2>Reading your reflection...</h2>
                     <p>We're processing your thoughts with care</p>
                     <div className="analyzing-steps">
-                        <span className="step active">🎧 Processing audio</span>
-                        <span className="step">📝 Transcribing</span>
+                        <span className="step active">📝 Processing text</span>
                         <span className="step">💭 Understanding emotions</span>
+                        <span className="step">✨ Generating insight</span>
                     </div>
                 </div>
             </div>
@@ -123,7 +125,7 @@ export default function Reflect() {
                         <div className="emotion-badge primary">
                             {analysisResult.primaryEmotion}
                         </div>
-                        {analysisResult.secondaryEmotion && (
+                        {analysisResult.secondaryEmotion && analysisResult.secondaryEmotion !== 'null' && (
                             <div className="emotion-badge secondary">
                                 {analysisResult.secondaryEmotion}
                             </div>
@@ -141,7 +143,7 @@ export default function Reflect() {
                             View Full Analysis
                         </button>
                         <button className="btn btn-secondary" onClick={handleNewReflection}>
-                            Record Another
+                            Write Another
                         </button>
                     </div>
                 </div>
@@ -156,12 +158,8 @@ export default function Reflect() {
                     <button className="back-button" onClick={() => navigate('/home')}>
                         ← Back
                     </button>
-                    <h1>{isQuickMode ? 'Quick Mood Check' : "Today's Reflection"}</h1>
-                    <p>
-                        {isQuickMode
-                            ? 'Just 30 seconds to capture how you feel'
-                            : 'Take a moment to check in with yourself'}
-                    </p>
+                    <h1>Today's Reflection</h1>
+                    <p>Take a moment to check in with yourself</p>
                 </header>
 
                 <div className="reflect-content slide-up">
@@ -181,11 +179,27 @@ export default function Reflect() {
                         </div>
                     )}
 
-                    <AudioRecorder
-                        onRecordingComplete={handleRecordingComplete}
-                        maxDuration={isQuickMode ? 45 : 60}
-                        minDuration={isQuickMode ? 15 : 30}
-                    />
+                    <div className="text-input-section">
+                        <textarea
+                            className="reflection-textarea"
+                            placeholder="Write your thoughts here... How are you feeling today? What's on your mind?"
+                            value={textInput}
+                            onChange={(e) => setTextInput(e.target.value)}
+                            rows={6}
+                            maxLength={2000}
+                        />
+                        <div className="text-input-footer">
+                            <span className="char-count">{textInput.length} / 2000</span>
+                            <button
+                                className="btn btn-primary"
+                                onClick={handleTextSubmit}
+                                disabled={textInput.trim().length < 20}
+                            >
+                                Submit Reflection
+                            </button>
+                        </div>
+                        <p className="text-hint">Minimum 20 characters to submit</p>
+                    </div>
                 </div>
 
                 <Disclaimer />

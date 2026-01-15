@@ -1,49 +1,37 @@
-import express from 'express';
-import multer from 'multer';
-import { db } from '../firebase-admin.js';
-import { analyzeAudioReflection, analyzeWeeklyPatterns, analyzeTextReflection } from '../gemini.js';
+import express from "express";
+import { db } from "../firebase-admin.js";
+import { analyzeTextReflection, analyzeWeeklyPatterns } from "../gemini.js";
 
 const router = express.Router();
 
-// Configure multer for memory storage
-const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: {
-        fileSize: 10 * 1024 * 1024 // 10MB limit
-    }
-});
-
 /**
  * POST /api/analyze-daily
- * Analyze audio/text reflection and save transcript to Firestore
- * Audio is processed in-memory only (not stored)
+ * TEXT-ONLY daily analysis (audio disabled for stability)
  */
-router.post('/analyze-daily', upload.single('audio'), async (req, res) => {
+router.post("/analyze-daily", async (req, res) => {
     try {
         const { userId, date, textInput } = req.body;
 
-        if (!userId) {
-            return res.status(400).json({ error: 'User ID is required' });
+        console.log("REQ BODY:", req.body);
+
+        if (!userId || !textInput) {
+            return res.status(400).json({
+                success: false,
+                error: "userId and textInput are required"
+            });
         }
 
-        const dateStr = date || new Date().toISOString().split('T')[0];
-        let analysis;
+        const dateStr = date || new Date().toISOString().split("T")[0];
 
-        // Analyze audio if provided (in-memory only, not stored)
-        if (req.file) {
-            analysis = await analyzeAudioReflection(req.file.buffer, req.file.mimetype);
-        } else if (textInput) {
-            // Fallback to text analysis
-            analysis = await analyzeTextReflection(textInput);
-        } else {
-            return res.status(400).json({ error: 'Audio file or text input required' });
-        }
+        const analysis = await analyzeTextReflection(textInput);
 
         if (!analysis.success) {
-            return res.status(500).json({ error: 'Analysis failed', details: analysis.error });
+            return res.status(500).json({
+                success: false,
+                error: analysis.error
+            });
         }
 
-        // Save to Firestore (transcript only, no audio URL)
         const reflectionData = {
             userId,
             date: dateStr,
@@ -56,91 +44,42 @@ router.post('/analyze-daily', upload.single('audio'), async (req, res) => {
             createdAt: new Date()
         };
 
-        const docRef = await db.collection('reflections').add(reflectionData);
+        const docRef = await db.collection("reflections").add(reflectionData);
 
-        res.json({
+        return res.json({
             success: true,
-            id: docRef.id,
-            data: reflectionData
+            analysis: {
+                id: docRef.id,
+                ...reflectionData
+            }
         });
-
     } catch (error) {
-        console.error('Analysis error:', error);
-        res.status(500).json({ error: 'Failed to analyze reflection', details: error.message });
-    }
-});
-
-/**
- * GET /api/reflections/:userId
- * Get all reflections for a user
- */
-router.get('/reflections/:userId', async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const { limit = 7 } = req.query;
-
-        const snapshot = await db.collection('reflections')
-            .where('userId', '==', userId)
-            .orderBy('createdAt', 'desc')
-            .limit(parseInt(limit))
-            .get();
-
-        const reflections = [];
-        snapshot.forEach(doc => {
-            reflections.push({ id: doc.id, ...doc.data() });
+        console.error("DAILY ANALYSIS ROUTE ERROR:", error);
+        res.status(500).json({
+            success: false,
+            error: "Failed to analyze reflection"
         });
-
-        res.json({ success: true, reflections });
-
-    } catch (error) {
-        console.error('Fetch error:', error);
-        res.status(500).json({ error: 'Failed to fetch reflections', details: error.message });
-    }
-});
-
-/**
- * GET /api/reflection/:userId/:date
- * Get reflection for a specific date
- */
-router.get('/reflection/:userId/:date', async (req, res) => {
-    try {
-        const { userId, date } = req.params;
-
-        const snapshot = await db.collection('reflections')
-            .where('userId', '==', userId)
-            .where('date', '==', date)
-            .limit(1)
-            .get();
-
-        if (snapshot.empty) {
-            return res.status(404).json({ error: 'Reflection not found' });
-        }
-
-        const doc = snapshot.docs[0];
-        res.json({ success: true, reflection: { id: doc.id, ...doc.data() } });
-
-    } catch (error) {
-        console.error('Fetch error:', error);
-        res.status(500).json({ error: 'Failed to fetch reflection', details: error.message });
     }
 });
 
 /**
  * POST /api/analyze-weekly
- * Analyze patterns from recent reflections
  */
-router.post('/analyze-weekly', async (req, res) => {
+router.post("/analyze-weekly", async (req, res) => {
     try {
         const { userId } = req.body;
 
         if (!userId) {
-            return res.status(400).json({ error: 'User ID is required' });
+            return res.status(400).json({
+                success: false,
+                error: "User ID is required"
+            });
         }
 
-        // Fetch last 7 reflections
-        const snapshot = await db.collection('reflections')
-            .where('userId', '==', userId)
-            .orderBy('createdAt', 'desc')
+        const snapshot = await db
+            .collection("reflections")
+            .where("userId", "==", userId)
+            .orderBy("createdAt", "desc")
             .limit(7)
             .get();
 
@@ -148,21 +87,19 @@ router.post('/analyze-weekly', async (req, res) => {
             return res.json({
                 success: true,
                 hasEnoughData: false,
-                message: 'Not enough reflections for weekly analysis'
+                message: "Not enough reflections"
             });
         }
 
-        const reflections = [];
-        snapshot.forEach(doc => {
-            reflections.push({ id: doc.id, ...doc.data() });
-        });
+        const reflections = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
 
-        // Need at least 3 reflections for meaningful analysis
         if (reflections.length < 3) {
             return res.json({
                 success: true,
                 hasEnoughData: false,
-                message: `Need at least 3 reflections for analysis. Currently have ${reflections.length}.`,
                 reflectionCount: reflections.length
             });
         }
@@ -170,54 +107,24 @@ router.post('/analyze-weekly', async (req, res) => {
         const analysis = await analyzeWeeklyPatterns(reflections);
 
         if (!analysis.success) {
-            return res.status(500).json({ error: 'Weekly analysis failed', details: analysis.error });
+            return res.status(500).json({
+                success: false,
+                error: analysis.error
+            });
         }
 
-        res.json({
+        return res.json({
             success: true,
             hasEnoughData: true,
             reflectionCount: reflections.length,
-            data: analysis.data,
-            reflections: reflections.map(r => ({
-                date: r.date,
-                primaryEmotion: r.primaryEmotion,
-                emotionalIntensity: r.emotionalIntensity,
-                theme: r.theme
-            }))
+            analysis: analysis.data
         });
-
     } catch (error) {
-        console.error('Weekly analysis error:', error);
-        res.status(500).json({ error: 'Failed to analyze weekly patterns', details: error.message });
-    }
-});
-
-/**
- * DELETE /api/reflection/:id
- * Delete a reflection
- */
-router.delete('/reflection/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { userId } = req.body;
-
-        // Verify ownership
-        const doc = await db.collection('reflections').doc(id).get();
-        if (!doc.exists) {
-            return res.status(404).json({ error: 'Reflection not found' });
-        }
-
-        if (doc.data().userId !== userId) {
-            return res.status(403).json({ error: 'Unauthorized' });
-        }
-
-        await db.collection('reflections').doc(id).delete();
-
-        res.json({ success: true, message: 'Reflection deleted' });
-
-    } catch (error) {
-        console.error('Delete error:', error);
-        res.status(500).json({ error: 'Failed to delete reflection', details: error.message });
+        console.error("WEEKLY ANALYSIS ROUTE ERROR:", error);
+        res.status(500).json({
+            success: false,
+            error: "Weekly analysis failed"
+        });
     }
 });
 

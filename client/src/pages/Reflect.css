@@ -206,6 +206,87 @@
     width: 100%;
 }
 
+/* Input Mode Toggle */
+.input-mode-toggle {
+    display: flex;
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-full);
+    padding: 4px;
+    gap: 4px;
+}
+
+.input-mode-toggle .mode-btn {
+    flex: 1;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: none;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.input-mode-toggle .mode-btn:hover {
+    color: var(--color-text);
+}
+
+.input-mode-toggle .mode-btn.active {
+    background: white;
+    color: var(--color-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Text Input Section */
+.text-input-section {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    border: 1px solid var(--color-border);
+}
+
+.reflection-textarea {
+    width: 100%;
+    padding: var(--spacing-lg);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
+    resize: vertical;
+    min-height: 150px;
+    transition: border-color var(--transition-fast);
+}
+
+.reflection-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.reflection-textarea::placeholder {
+    color: var(--color-text-muted);
+}
+
+.text-input-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--spacing-md);
+}
+
+.char-count {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+.text-hint {
+    text-align: center;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-sm);
+}
+
 @media (max-width: 480px) {
     .back-button {
         position: static;
@@ -218,5 +299,14 @@
 
     .punchline-display h2 {
         font-size: var(--font-size-xl);
+    }
+
+    .text-input-footer {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .text-input-footer .btn {
+        width: 100%;
     }
 }

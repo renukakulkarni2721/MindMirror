@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { db } from '../firebase';
+import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EmotionCard from '../components/EmotionCard';
 import './Home.css';
@@ -31,14 +33,20 @@ export default function Home() {
             if (!user) return;
 
             try {
-                // Fetch today's reflection
-                const todayRes = await fetch(`${API_URL}/reflection/${user.uid}/${today}`);
-                if (todayRes.ok) {
-                    const data = await todayRes.json();
-                    setTodayReflection(data.reflection);
+                // Fetch today's reflection from Firestore directly
+                const todayQuery = query(
+                    collection(db, 'reflections'),
+                    where('userId', '==', user.uid),
+                    where('date', '==', today),
+                    limit(1)
+                );
+                const todaySnapshot = await getDocs(todayQuery);
+                if (!todaySnapshot.empty) {
+                    const doc = todaySnapshot.docs[0];
+                    setTodayReflection({ id: doc.id, ...doc.data() });
                 }
 
-                // Fetch weekly summary
+                // Fetch weekly summary via API (still available)
                 const weeklyRes = await fetch(`${API_URL}/analyze-weekly`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -108,19 +116,10 @@ export default function Home() {
                 {/* Primary Actions */}
                 <section className="primary-actions slide-up">
                     <Link to="/reflect" className="action-card action-primary">
-                        <span className="action-icon">🎙️</span>
+                        <span className="action-icon">✍️</span>
                         <div className="action-content">
-                            <h3>Record today's reflection</h3>
+                            <h3>Write today's reflection</h3>
                             <p>Take a moment to check in with yourself</p>
-                        </div>
-                        <span className="action-arrow">→</span>
-                    </Link>
-
-                    <Link to="/reflect?mode=quick" className="action-card action-secondary">
-                        <span className="action-icon">⚡</span>
-                        <div className="action-content">
-                            <h3>Quick mood check</h3>
-                            <p>Just 30 seconds to log how you feel</p>
                         </div>
                         <span className="action-arrow">→</span>
                     </Link>
@@ -136,7 +135,7 @@ export default function Home() {
                                     emotion={todayReflection.primaryEmotion}
                                     intensity={todayReflection.emotionalIntensity}
                                 />
-                                {todayReflection.secondaryEmotion && (
+                                {todayReflection.secondaryEmotion && todayReflection.secondaryEmotion !== 'null' && (
                                     <EmotionCard
                                         emotion={todayReflection.secondaryEmotion}
                                         isSecondary
@@ -166,13 +165,13 @@ export default function Home() {
                                 <div className="weekly-stat">
                                     <span className="stat-label">Dominant Emotions</span>
                                     <span className="stat-value">
-                                        {weeklyData.data?.dominantEmotions?.slice(0, 2).join(', ') || 'Analyzing...'}
+                                        {weeklyData.analysis?.dominantEmotions?.slice(0, 2).join(', ') || 'Analyzing...'}
                                     </span>
                                 </div>
                                 <div className="weekly-stat">
                                     <span className="stat-label">Key Themes</span>
                                     <span className="stat-value">
-                                        {weeklyData.data?.dominantThemes?.slice(0, 2).join(', ') || 'Analyzing...'}
+                                        {weeklyData.analysis?.dominantThemes?.slice(0, 2).join(', ') || 'Analyzing...'}
                                     </span>
                                 </div>
                             </div>
