@@ -1,0 +1,59 @@
+.emotion-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    transition: transform var(--transition-fast);
+}
+
+.emotion-card:hover {
+    transform: translateY(-2px);
+}
+
+.emotion-card-secondary {
+    opacity: 0.85;
+    padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.emotion-emoji {
+    font-size: 1.5rem;
+}
+
+.emotion-card-secondary .emotion-emoji {
+    font-size: 1.25rem;
+}
+
+.emotion-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.emotion-name {
+    font-weight: var(--font-weight-semibold);
+    text-transform: capitalize;
+}
+
+.emotion-intensity {
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    background: rgba(0, 0, 0, 0.1);
+    width: fit-content;
+}
+
+.intensity-low {
+    background: rgba(168, 213, 186, 0.3);
+}
+
+.intensity-medium {
+    background: rgba(244, 208, 111, 0.3);
+}
+
+.intensity-high {
+    background: rgba(232, 139, 140, 0.3);
+}

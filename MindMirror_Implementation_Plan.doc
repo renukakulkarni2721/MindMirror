@@ -1,0 +1,197 @@
+# MindMirror Implementation Plan
+
+A mental health reflection web application that helps users notice emotional patterns using AI-powered reflection.
+
+---
+
+## User Review Required
+
+> IMPORTANT: Firebase Configuration Required
+> You will need to provide Firebase project credentials:
+> - Firebase Web SDK config (for frontend)
+> - Firebase Admin SDK service account JSON (for backend)
+> - Google Gemini API key
+
+> WARNING: Environment Variables
+> The backend requires `.env` file with sensitive keys. These will not be committed to version control.
+
+---
+
+## Proposed Changes
+
+### Project Structure
+
+mindmirror/
+├── client/                    # React frontend (Vite)
+│   ├── src/
+│   │   ├── components/        # Reusable UI components
+│   │   ├── contexts/          # Auth context
+│   │   ├── pages/             # Route pages
+│   │   ├── firebase.js        # Firebase config
+│   │   ├── App.jsx            # Main app with routing
+│   │   └── index.css          # Global styles
+│   └── package.json
+│
+├── server/                    # Node.js/Express backend
+│   ├── routes/                # API routes
+│   ├── firebase-admin.js      # Firebase Admin SDK setup
+│   ├── gemini.js              # Gemini API integration
+│   ├── server.js              # Express server
+│   └── package.json
+│
+└── mind mirror logo.png       # Existing logo
+
+---
+
+### Backend (Node.js + Express)
+
+#### [NEW] server.js
+- Express server with CORS configured for React
+- Error handling middleware
+- Routes mounted at `/api`
+
+#### [NEW] firebase-admin.js
+- Initialize Firebase Admin SDK
+- Export Firestore and Storage instances
+
+#### [NEW] gemini.js
+- Configure Google Generative AI client
+- Functions for:
+  - Audio transcription
+  - Daily emotional analysis
+  - Weekly pattern analysis
+
+#### [NEW] routes/analysis.js
+- POST /api/upload-audio - Upload audio to Firebase Storage
+- POST /api/analyze-daily - Transcribe and analyze single reflection
+- POST /api/analyze-weekly - Analyze last 7 days of reflections
+
+---
+
+### Frontend (React + Vite)
+
+#### [NEW] firebase.js
+- Firebase Web SDK initialization
+- Export auth, firestore, storage instances
+
+#### [NEW] contexts/AuthContext.jsx
+- Auth state management
+- Login/logout functions
+- Protected route wrapper
+
+#### [NEW] Core Pages
+
+| Route          | File               | Description                          |
+|----------------|--------------------|------------------------------------- |
+| /login         | pages/Login.jsx    | Email/password + Google sign-in      |
+| /register      | pages/Register.jsx | New user signup with privacy notice  |
+| /home          | pages/Home.jsx     | Time-based greeting, CTAs, previews  |
+| /reflect       | pages/Reflect.jsx  | Audio recording with playback        |
+| /daily/:date   | pages/Daily.jsx    | Daily emotional analysis display     |
+| /weekly        | pages/Weekly.jsx   | Weekly patterns and trend graph      |
+| /profile       | pages/Profile.jsx  | User info, logout, data notice       |
+
+#### [NEW] Components
+
+| Component              | Purpose                          |
+|------------------------|----------------------------------|
+| AudioRecorder.jsx      | 30-60 sec recording with controls|
+| EmotionCard.jsx        | Display emotion with intensity   |
+| InsightCard.jsx        | Daily/weekly insight display     |
+| EmotionTrendChart.jsx  | 7-day emotion visualization      |
+| LoadingSpinner.jsx     | Calm loading state               |
+| Disclaimer.jsx         | Ethics notice component          |
+
+#### [NEW] index.css
+- Calm, minimal aesthetic
+- Soft neutral color palette (lavender, sage, cream tones)
+- Modern typography (Inter font)
+- Smooth micro-animations
+
+---
+
+### Firestore Data Model
+
+// Collection: reflections
+{
+  userId: "string",
+  date: "YYYY-MM-DD",
+  transcript: "string",
+  primaryEmotion: "string",
+  secondaryEmotion: "string",
+  theme: "string",
+  emotionalIntensity: "low | medium | high",
+  audioUrl: "string",
+  createdAt: Timestamp
+}
+
+---
+
+### Gemini API Prompts
+
+Daily Analysis Prompt:
+- Extract emotions from transcript
+- Identify key theme
+- Generate gentle insight (2-3 sentences)
+- No diagnosis or advice
+
+Weekly Analysis Prompt:
+- Analyze 5-7 reflections
+- Detect patterns and fluctuations
+- Generate reflective question
+- Descriptive, not prescriptive
+
+---
+
+## Verification Plan
+
+### Manual Testing
+
+1. Start Backend Server
+   cd d:\MIT WPU\mindmirror\server
+   npm install
+   npm run dev
+   - Verify server starts on port 5000
+   - Check console for "Server running" message
+
+2. Start Frontend Server
+   cd d:\MIT WPU\mindmirror\client
+   npm install
+   npm run dev
+   - Verify React app starts on port 5173
+   - Check browser for login page
+
+3. Test User Flow
+   - Register new account
+   - Login with credentials
+   - Verify home page shows time-based greeting
+   - Record 30-60 second reflection
+   - Check playback before submit
+   - Submit and verify daily analysis displays
+   - Navigate to weekly view
+   - Check profile page and logout
+
+4. Error Handling
+   - Test with no microphone access
+   - Test with empty reflection history
+   - Verify fallback UI states display correctly
+
+> NOTE: Firebase Setup
+> Before testing, you must:
+> 1. Create a Firebase project at console.firebase.google.com
+> 2. Enable Authentication (Email/Password + Google)
+> 3. Create Firestore database
+> 4. Enable Storage
+> 5. Add credentials to `.env` files
+
+---
+
+## Summary
+
+This plan creates a complete MindMirror application with:
+✅ React frontend with all 7 routes
+✅ Express backend with 3 API endpoints
+✅ Firebase integration (Auth, Firestore, Storage)
+✅ Gemini AI for transcription and emotional analysis
+✅ Calm, accessible UI design
+✅ Ethics disclaimers included
